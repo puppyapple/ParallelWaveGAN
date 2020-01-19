@@ -28,6 +28,7 @@ class AudioMelDataset(Dataset):
                  mel_length_threshold=None,
                  return_filename=False,
                  allow_cache=False,
+                 augment=True
                  ):
         """Initialize dataset.
 
@@ -44,6 +45,7 @@ class AudioMelDataset(Dataset):
 
         """
         self.ap = ap
+        self.augment = augment
         # find all of audio and mel files
         audio_files = [file_id[0] for file_id in file_ids]
         mel_files = [file_id[1] for file_id in file_ids]
@@ -81,8 +83,14 @@ class AudioMelDataset(Dataset):
             self.caches = self.manager.list()
             self.caches += [() for _ in range(len(audio_files))]
 
+    # add .npy support
     def audio_load_fn(self, file_path):
-        wav =  self.ap.load_wav(file_path).astype('float32')
+        if '.npy' in file_path:
+            wav = np.load(file_path)
+        elif '.wav' in file_path:
+            wav =  self.ap.load_wav(file_path).astype('float32')
+        else:
+            raise TypeError("Not supported data type!")
         if self.augment:
             amplitude = np.random.uniform(low=0.3, high=1.0)
             wav = wav * amplitude

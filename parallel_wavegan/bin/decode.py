@@ -10,8 +10,9 @@ import argparse
 import logging
 import os
 import time
-
-import kaldiio
+import sys
+sys.path.append('../../')
+# import kaldiio
 import numpy as np
 import soundfile as sf
 import torch
@@ -23,6 +24,19 @@ from parallel_wavegan.datasets import MelDataset
 from parallel_wavegan.models import ParallelWaveGANGenerator
 from parallel_wavegan.utils import read_hdf5
 
+
+def unwrap_distributed(state_dict):
+    """
+    Unwraps model from DistributedDataParallel.
+    DDP wraps model in additional "module.", it needs to be removed for single
+    GPU inference.
+    :param state_dict: model's state dict
+    """
+    new_state_dict = {}
+    for key, value in state_dict.items():
+        new_key = key.replace('module.', '')
+        new_state_dict[new_key] = value
+    return new_state_dict
 
 def main():
     """Run decoding process."""
@@ -99,7 +113,7 @@ def main():
     else:
         device = torch.device("cpu")
     model = ParallelWaveGANGenerator(**config["generator_params"])
-    model.load_state_dict(torch.load(args.checkpoint, map_location="cpu")["model"]["generator"])
+    model.load_state_dict(unwrap_distributed(torch.load(args.checkpoint, map_location="cpu")["model"]["generator"]))
     model.remove_weight_norm()
     model = model.eval().to(device)
     logging.info(f"loaded model parameters from {args.checkpoint}.")

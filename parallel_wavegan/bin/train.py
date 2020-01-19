@@ -10,6 +10,7 @@ import argparse
 import logging
 import os
 import sys
+sys.path.append('../')
 import io
 import pickle
 
@@ -21,7 +22,7 @@ import soundfile as sf
 import torch
 import yaml
 
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 from tqdm import tqdm
