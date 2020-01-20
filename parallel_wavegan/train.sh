@@ -1,0 +1,2 @@
+nohup tensorboard --logdir=./output/ --host=10.141.168.98 &
+CUDA_VISIBLE_DEVICES="0,1" python3.7 -m apex.parallel.multiproc ./bin/train.py --outdir ./output --config ./tts_config.yaml --verbose 2 > my_train.log 2>&1 &
